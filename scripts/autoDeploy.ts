@@ -10,14 +10,38 @@ import {
   SystemPromptManager,
   Treasury,
   WorkerHub,
+  WrappedToken,
 } from "../typechain-types";
-import { deployOrUpgrade } from "./lib/utils";
+import { deployOrUpgrade, deployContract } from "./lib/utils";
 import { EventLog, Signer } from "ethers";
 import path from "path";
 import fs from "fs";
 
 const config = network.config as any;
 const networkName = network.name.toUpperCase();
+
+async function deployWrappedToken() {
+  console.log("DEPLOY WRAPPED TOKEN...");
+
+  const tokenName = "Wrapped Eternal AI";
+  const tokenSymbol = "WEAI";
+  const constructorParams = [tokenName, tokenSymbol];
+  let wrappedToken: WrappedToken;
+
+  if (config.zksync) {
+    wrappedToken = (await deployContract(
+      "WrappedToken",
+      constructorParams
+    )) as unknown as WrappedToken;
+  } else {
+    const fact = await ethers.getContractFactory("WrappedToken");
+    wrappedToken = await fact.deploy(tokenName, tokenSymbol);
+    await wrappedToken.waitForDeployment();
+  }
+  console.log("WrappedToken contract is deployed to ", wrappedToken.target);
+
+  return wrappedToken.target;
+}
 
 async function deployDAOToken() {
   console.log("DEPLOY DAO TOKEN...");
@@ -57,20 +81,17 @@ async function deployTreasury(daoTokenAddress: string) {
 
 async function deployStakingHub(
   daoTokenAddress: string,
-  treasuryAddress: string
+  treasuryAddress: string,
+  wEAIAddress: string
 ) {
   console.log("DEPLOY STAKING HUB...");
 
   const l2OwnerAddress = config.l2OwnerAddress;
-  const wEAIAddress = config.wEAIAddress;
-  assert.ok(
-    wEAIAddress,
-    `Missing ${networkName}_WEAI from environment variables!`
-  );
   assert.ok(
     l2OwnerAddress,
     `Missing ${networkName}_L2_OWNER_ADDRESS from environment variables!`
   );
+  assert.ok(wEAIAddress, `Missing ${networkName}_WEAI!`);
   assert.ok(daoTokenAddress, `Missing ${networkName}_DAO_TOKEN_ADDRESS!`);
   assert.ok(treasuryAddress, `Missing ${networkName}_TREASURY_ADDRESS!`);
 
@@ -109,20 +130,17 @@ async function deployStakingHub(
 async function deployWorkerHub(
   daoTokenAddress: string,
   treasuryAddress: string,
-  stakingHubAddress: string
+  stakingHubAddress: string,
+  wEAIAddress: string
 ) {
   console.log("DEPLOY WORKER HUB...");
 
   const l2OwnerAddress = config.l2OwnerAddress;
-  const wEAIAddress = config.wEAIAddress;
-  assert.ok(
-    wEAIAddress,
-    `Missing ${networkName}_WEAI from environment variables!`
-  );
   assert.ok(
     l2OwnerAddress,
     `Missing ${networkName}_L2_OWNER_ADDRESS from environment variables!`
   );
+  assert.ok(wEAIAddress, `Missing ${networkName}_WEAI!`);
   assert.ok(daoTokenAddress, `Missing ${networkName}_DAO_TOKEN_ADDRESS!`);
   assert.ok(treasuryAddress, `Missing ${networkName}_TREASURY_ADDRESS!`);
   assert.ok(stakingHubAddress, `Missing ${networkName}_STAKING_HUB_ADDRESS!`);
@@ -274,7 +292,7 @@ async function deployHybridModel(
     metadata,
   ];
   const hybridModel = (await deployOrUpgrade(
-    null,
+    undefined,
     "HybridModel",
     constructorParams,
     config,
@@ -402,23 +420,35 @@ async function saveDeployedAddresses(networkName: string, addresses: any) {
 }
 
 async function main() {
+  console.log((await ethers.getSigners())[0].address);
+
+  const wrappedTokenAddress = await deployWrappedToken();
+
   const daoTokenAddress = await deployDAOToken();
+
   const treasuryAddress = await deployTreasury(daoTokenAddress.toString());
+
   const stakingHubAddress = await deployStakingHub(
     daoTokenAddress.toString(),
-    treasuryAddress.toString()
+    treasuryAddress.toString(),
+    wrappedTokenAddress.toString()
   );
+
   const workerHubAddress = await deployWorkerHub(
     daoTokenAddress.toString(),
     treasuryAddress.toString(),
-    stakingHubAddress.toString()
+    stakingHubAddress.toString(),
+    wrappedTokenAddress.toString()
   );
+
   const collectionAddress = await deployModelCollection();
+
   const hybridModelAddress = await deployHybridModel(
     workerHubAddress.toString(),
     stakingHubAddress.toString(),
     collectionAddress.toString()
   );
+
   const systemPromptManagerAddress = await deploySystemPromptManager(
     config.l2OwnerAddress,
     hybridModelAddress.toString(),
@@ -430,6 +460,7 @@ async function main() {
   );
 
   const deployedAddresses = {
+    wrappedTokenAddress,
     daoTokenAddress,
     treasuryAddress,
     stakingHubAddress,

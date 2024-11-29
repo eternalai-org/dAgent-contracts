@@ -34,3 +34,21 @@ contract WrappedEAI is ERC20, Ownable {
         wrap();
     }
 }
+
+/// @title Wrapped Token Contract for Testing
+/// @notice Represents a wrapped token used in cross-chain asset bridging scenarios.
+/// @dev This contract is intended for testing purposes only.
+contract WrappedToken is ERC20, Ownable {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+
+    /// @notice Mints new tokens to a specified address.
+    /// @dev Can only be called by the contract owner when testing. In the cross-chain asset bridging scenarios, we can use onlyBridge instead of onlyOwner.
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+
+    /// @notice Burns a specific amount of tokens from the caller's account.
+    function burn(uint256 amount) public {
+        _burn(msg.sender, amount);
+    }
+}
