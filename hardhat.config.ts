@@ -80,12 +80,11 @@ const config: HardhatUserConfig = {
       zksync: false,
       gasPrice: "auto",
     } as any,
-  },
-  base_mainnet: {
+    base_mainnet: {
       url:
         "https://base-mainnet.infura.io/v3/" +
         process.env.BASE_MAINNET_INFURA_API_KEY,
-      chainId: 42161,
+      chainId: 8453,
       accounts: [
         process.env.BASE_MAINNET_PRIVATE_KEY,
         process.env.BASE_MAINNET_PRIVATE_KEY_WORKER_1,
