@@ -1,12 +1,11 @@
-# Dagent Contracts
+# dAgent Contracts
 
-Welcome to the Dagent Contracts repository. This project houses the smart contracts for the Dagent platform, a decentralized AI network.
+This repository contains the smart contracts for EternalAI, enabling users to launch their own decentralized agents (dAgents).
 
 ## Table of Contents
 
-- [Dagent Contracts](#dagent-contracts)
+- [dAgent Contracts](#dagent-contracts)
   - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
   - [Contracts Overview](#contracts-overview)
   - [Prerequisites](#prerequisites)
   - [Setup](#setup)
@@ -18,13 +17,10 @@ Welcome to the Dagent Contracts repository. This project houses the smart contra
       - [Deploy to a Specific Network](#deploy-to-a-specific-network)
       - [Example: Deploy to Arbitrum Mainnet](#example-deploy-to-arbitrum-mainnet)
 
-## Overview
-
-The Dagent platform utilizes decentralized smart contracts to establish a scalable and robust AI network on the blockchain. This repository contains all necessary smart contracts for deploying and interacting with the Dagent platform.
 
 ## Contracts Overview
 
-- **SystemPromptManager**: Manages agents as ERC721 NFTs. Each agent has a system prompt and a mission, used to clarify context before forwarding user chat prompts to the HybridModel.
+- **SystemPromptManager**: Manages dAgents as ERC721 NFTs. Each dAgent has a system prompt and a mission, used to clarify context before forwarding user chat prompts to the HybridModel.
 - **ModelCollection**: The collection of AI models. 
 - **HybridModel**: Represents the AI model, receiving requests from SystemPromptManager or EOAs and forwarding them to the WorkerHub.
 - **WorkerHub**: Processes chat prompts (inference) via the AI network maintained by Workers.
@@ -55,17 +51,17 @@ cp .env.example .env
 
 Update the .env file with your details:
 
-- ARBITRUM_MAINNET_INFURA_API_KEY: Your Infura API key
+- BASE_MAINNET_INFURA_API_KEY: Your Infura API key
 
-- ARBITRUM_MAINNET_PRIVATE_KEY: Private key of the deployer
+- BASE_MAINNET_PRIVATE_KEY: Private key of the deployer
 
-- ARBITRUM_MAINNET_PRIVATE_KEY_WORKER_1: Private key of worker 1
+- BASE_MAINNET_PRIVATE_KEY_WORKER_1: Private key of worker 1
 
-- ARBITRUM_MAINNET_PRIVATE_KEY_WORKER_2: Private key of worker 2
+- BASE_MAINNET_PRIVATE_KEY_WORKER_2: Private key of worker 2
 
-- ARBITRUM_MAINNET_PRIVATE_KEY_WORKER_3: Private key of worker 3
+- BASE_MAINNET_PRIVATE_KEY_WORKER_3: Private key of worker 3
 
-- ARBITRUM_MAINNET_L2_OWNER_ADDRESS: Owner address of the L2 chain who will receive rewards for each inference
+- BASE_MAINNET_L2_OWNER_ADDRESS: Owner address of the L2 chain who will receive rewards for each inference
 
 Note: Workers are entities responsible for maintaining the AI consensus.
 
@@ -83,12 +79,12 @@ npx hardhat compile
 
 ### 5. Deployment
 #### Deploy to a Specific Network
-Replace <YOUR_NETWORK> with the target network (e.g., arbitrum_mainnet):
+Replace <YOUR_NETWORK> with the target network (e.g., base_mainnet):
 ```bash
 npx hardhat run scripts/autoDeploy.ts --network <YOUR_NETWORK>
 ```
-#### Example: Deploy to Arbitrum Mainnet
+#### Example: Deploy to Base Mainnet
 
 ```bash
-npx hardhat run scripts/autoDeploy.ts --network arbitrum_mainnet
+npx hardhat run scripts/autoDeploy.ts --network base_mainnet
 ```
